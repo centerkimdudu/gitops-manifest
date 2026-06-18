@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  policy.default: role:readonly
+
+  policy.csv: |
+    # ── Developer ──────────────────────────────────────────────────
+    # dev 환경 sync만 가능. qa·prod 차단.
+    g, developer,                  role:developer
+    p, role:developer, applications, get,  gitops-demo/gitops-demo-dev,  allow
+    p, role:developer, applications, sync, gitops-demo/gitops-demo-dev,  allow
+    p, role:developer, applications, get,  gitops-demo/gitops-demo-qa,   deny
+    p, role:developer, applications, sync, gitops-demo/gitops-demo-qa,   deny
+    p, role:developer, applications, get,  gitops-demo/gitops-demo-prod, deny
+    p, role:developer, applications, sync, gitops-demo/gitops-demo-prod, deny
+
+    # ── QA Engineer ────────────────────────────────────────────────
+    # dev·qa 환경 sync 가능. prod 차단.
+    g, qa,                         role:qa-engineer
+    p, role:qa-engineer, applications, get,  gitops-demo/gitops-demo-dev,  allow
+    p, role:qa-engineer, applications, sync, gitops-demo/gitops-demo-dev,  allow
+    p, role:qa-engineer, applications, get,  gitops-demo/gitops-demo-qa,   allow
+    p, role:qa-engineer, applications, sync, gitops-demo/gitops-demo-qa,   allow
+    p, role:qa-engineer, applications, get,  gitops-demo/gitops-demo-prod, deny
+    p, role:qa-engineer, applications, sync, gitops-demo/gitops-demo-prod, deny
+
+    # ── Approver ───────────────────────────────────────────────────
+    # 전체 권한 (prod sync 포함)
+    g, approver,                   role:approver
+    p, role:approver, applications, *,    gitops-demo/*,                 allow
+    p, role:approver, clusters,     get,  *,                             allow
+    p, role:approver, repositories, get,  *,                             allow
+
+  # 토큰 만료: 8시간 (기본값 재정의)
+  policy.matchMode: "glob"

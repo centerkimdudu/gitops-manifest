@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: gitops-demo
+  namespace: argocd
+spec:
+  description: "GitOps Demo - dev/qa/prod 환경 분리, Developer/QA/Approver 권한 분리"
+
+  sourceRepos:
+    - "https://github.com/centerkimdudu/gitops-manifest.git"  # [HUMAN] 교체 필요
+
+  destinations:
+    - namespace: gitops-dev
+      server: https://kubernetes.default.svc
+    - namespace: gitops-qa
+      server: https://kubernetes.default.svc
+    - namespace: gitops-prod
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+
+  namespaceResourceWhitelist:
+    - group: "apps"
+      kind: Deployment
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ConfigMap
+    - group: "networking.k8s.io"
+      kind: Ingress
+    - group: "policy"
+      kind: PodDisruptionBudget
+
+  roles:
+    # Developer: dev 읽기/sync, qa·prod 접근 불가
+    - name: developer
+      description: "Developer — dev 환경만 수동 sync 가능"
+      policies:
+        - p, proj:gitops-demo:developer, applications, get,  gitops-demo/gitops-demo-dev,  allow
+        - p, proj:gitops-demo:developer, applications, sync, gitops-demo/gitops-demo-dev,  allow
+        - p, proj:gitops-demo:developer, applications, get,  gitops-demo/gitops-demo-qa,   deny
+        - p, proj:gitops-demo:developer, applications, sync, gitops-demo/gitops-demo-qa,   deny
+        - p, proj:gitops-demo:developer, applications, get,  gitops-demo/gitops-demo-prod, deny
+        - p, proj:gitops-demo:developer, applications, sync, gitops-demo/gitops-demo-prod, deny
+
+    # QA Engineer: dev·qa 읽기/sync, prod 접근 불가
+    - name: qa-engineer
+      description: "QA Engineer — dev·qa 수동 sync 가능, prod 접근 불가"
+      policies:
+        - p, proj:gitops-demo:qa-engineer, applications, get,  gitops-demo/gitops-demo-dev,  allow
+        - p, proj:gitops-demo:qa-engineer, applications, sync, gitops-demo/gitops-demo-dev,  allow
+        - p, proj:gitops-demo:qa-engineer, applications, get,  gitops-demo/gitops-demo-qa,   allow
+        - p, proj:gitops-demo:qa-engineer, applications, sync, gitops-demo/gitops-demo-qa,   allow
+        - p, proj:gitops-demo:qa-engineer, applications, get,  gitops-demo/gitops-demo-prod, deny
+        - p, proj:gitops-demo:qa-engineer, applications, sync, gitops-demo/gitops-demo-prod, deny
+
+    # Approver: 모든 환경 전체 권한
+    - name: approver
+      description: "Approver — prod 포함 모든 환경 전체 권한"
+      policies:
+        - p, proj:gitops-demo:approver, applications, *,    gitops-demo/*, allow
+        - p, proj:gitops-demo:approver, clusters,     get,  *,             allow
+        - p, proj:gitops-demo:approver, repositories, get,  *,             allow

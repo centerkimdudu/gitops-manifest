@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-prod
+  namespace: argocd
+  labels:
+    environment: prod
+    app.kubernetes.io/part-of: gitops-demo
+spec:
+  project: gitops-demo
+
+  source:
+    repoURL: https://github.com/centerkimdudu/gitops-manifest.git  # [HUMAN] 교체 필요
+    targetRevision: main
+    path: overlays/prod
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitops-prod
+
+  syncPolicy:
+    # automated 블록 없음 = 수동 sync만 허용
+    # Approver가 ArgoCD UI 또는 CLI에서 직접 SYNC를 눌러야만 배포됨
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true

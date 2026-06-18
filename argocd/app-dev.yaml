@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-dev
+  namespace: argocd
+  labels:
+    environment: dev
+    app.kubernetes.io/part-of: gitops-demo
+spec:
+  project: gitops-demo
+
+  source:
+    repoURL: https://github.com/centerkimdudu/gitops-manifest.git  # [HUMAN] 교체 필요
+    targetRevision: main
+    path: overlays/dev
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitops-dev
+
+  syncPolicy:
+    automated:
+      prune: true      # Git에서 삭제된 리소스 자동 제거
+      selfHeal: true   # 클러스터 직접 수정 시 Git 상태로 자동 복구
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true

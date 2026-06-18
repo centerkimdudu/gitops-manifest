@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-qa
+  namespace: argocd
+  labels:
+    environment: qa
+    app.kubernetes.io/part-of: gitops-demo
+spec:
+  project: gitops-demo
+
+  source:
+    repoURL: https://github.com/centerkimdudu/gitops-manifest.git  # [HUMAN] 교체 필요
+    targetRevision: main
+    path: overlays/qa
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitops-qa
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true

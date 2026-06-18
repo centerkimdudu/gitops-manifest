@@ -1,0 +1,14 @@
+# CODEOWNERS — gitops-manifest
+# [HUMAN] @centerkimdudu, @centerkimdudu 를 실제 GitHub ID로 교체하세요.
+
+# 기본: 모든 변경에 Approver 리뷰 필요
+*                           @centerkimdudu
+
+# prod overlay: Approver 단독 승인 (가장 중요한 보호)
+overlays/prod/              @centerkimdudu
+
+# qa overlay: QA Engineer + Approver
+overlays/qa/                @centerkimdudu @centerkimdudu
+
+# ArgoCD 설정: Approver 단독 승인
+argocd/                     @centerkimdudu
