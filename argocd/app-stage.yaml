@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-stage
+  namespace: argocd
+spec:
+  project: gitops-project
+  source:
+    repoURL: https://github.com/centerkimdudu/gitops-manifest
+    targetRevision: HEAD
+    path: overlays/stage
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitops-stage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
