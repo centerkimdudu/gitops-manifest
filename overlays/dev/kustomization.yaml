@@ -8,8 +8,8 @@ resources:
 
 images:
   - name: placeholder/gitops-demo-app
-    newName: kimtaejung/gitops-demo-app  # CI가 자동 교체
-    newTag: latest                                # CI가 자동 교체
+    newName: kimtaejung/gitops-demo-app
+    newTag: latest
 
 patches:
   - path: patch-replicas.yaml
