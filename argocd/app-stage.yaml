@@ -3,8 +3,13 @@ kind: Application
 metadata:
   name: gitops-stage
   namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: app=kimtaejung/gitops-demo-app
+    argocd-image-updater.argoproj.io/app.update-strategy: latest
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
 spec:
-  project: gitops-project
+  project: gitops-demo
   source:
     repoURL: https://github.com/centerkimdudu/gitops-manifest
     targetRevision: HEAD

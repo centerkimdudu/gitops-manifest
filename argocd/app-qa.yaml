@@ -6,18 +6,20 @@ metadata:
   labels:
     environment: qa
     app.kubernetes.io/part-of: gitops-demo
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: app=kimtaejung/gitops-demo-app
+    argocd-image-updater.argoproj.io/app.update-strategy: latest
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
 spec:
   project: gitops-demo
-
   source:
-    repoURL: https://github.com/centerkimdudu/gitops-manifest.git  # [HUMAN] 교체 필요
+    repoURL: https://github.com/centerkimdudu/gitops-manifest.git
     targetRevision: main
     path: overlays/qa
-
   destination:
     server: https://kubernetes.default.svc
     namespace: gitops-qa
-
   syncPolicy:
     automated:
       prune: true
